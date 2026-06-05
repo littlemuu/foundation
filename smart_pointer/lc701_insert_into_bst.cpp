@@ -45,6 +45,23 @@ struct TreeNode701 {
 class Solution701 {
 public:
     std::unique_ptr<TreeNode701> insertIntoBST(std::unique_ptr<TreeNode701> root, int val) {
+        if(root==nullptr){
+            root=std::make_unique<TreeNode701>(val);
+            return root;
+        }
+        std::unique_ptr<TreeNode701>* cur=&root;
+        while((*cur)){
+            if(val<(*cur)->val){
+                if((*cur)->left) cur=&((*cur)->left);
+                else break;
+            }
+            else{
+                if((*cur)->right) cur=&((*cur)->right);
+                else break;
+            }
+        }
+        if((*cur)->val>val) (*cur)->left=std::make_unique<TreeNode701>(val);
+        else (*cur)->right=std::make_unique<TreeNode701>(val);
         return root;
     }
 };
