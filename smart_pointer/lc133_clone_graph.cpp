@@ -44,7 +44,43 @@ struct GraphNode {
 
 class Solution133 {
 public:
+    // 错误版本对比：visited 在每次递归调用时都会重新创建。
+    // std::shared_ptr<GraphNode> cloneGraph(std::shared_ptr<GraphNode> node) {
+    //     if (!node) return nullptr;
+    //     std::unordered_map<std::shared_ptr<GraphNode>, std::shared_ptr<GraphNode>> visited;
+    //     if (visited.find(node) != visited.end()) return visited[node];
+    //     visited[node] = std::make_shared<GraphNode>(node->val);
+    //     for (auto it : node->neighbors) {
+    //         visited[node]->neighbors.push_back(cloneGraph(it));
+    //     }
+    //     return visited[node];
+    // }
+
+    // 正确版本：每次克隆任务只创建一次 visited，然后通过引用传给递归函数。
+    // 如果在递归内部重新创建 visited，遇到环会无限递归。
+    // 如果把 visited 作为成员变量，不同次 cloneGraph 调用之间可能残留旧数据。
     std::shared_ptr<GraphNode> cloneGraph(std::shared_ptr<GraphNode> node) {
-        return nullptr;
+        std::unordered_map<std::shared_ptr<GraphNode>, std::shared_ptr<GraphNode>> visited;
+        return cloneGraph(node, visited);
+    }
+
+private:
+    std::shared_ptr<GraphNode> cloneGraph(
+        const std::shared_ptr<GraphNode>& node,
+        std::unordered_map<std::shared_ptr<GraphNode>, std::shared_ptr<GraphNode>>& visited
+    ) {
+        if (!node) return nullptr;
+
+        auto found = visited.find(node);
+        if (found != visited.end()) return found->second;
+
+        auto cloned = std::make_shared<GraphNode>(node->val);
+        visited[node] = cloned;
+
+        for (const auto& neighbor : node->neighbors) {
+            cloned->neighbors.push_back(cloneGraph(neighbor, visited));
+        }
+
+        return cloned;
     }
 };
